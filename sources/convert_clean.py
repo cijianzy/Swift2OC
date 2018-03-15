@@ -8,7 +8,6 @@
 # print(file_lines)
 
 def get_clean_file(file_name):
-
     # file = open('/Users/cijian/workspace/EMAS/EMAS/SSH/ALYSSHSettingVC.swift', 'r')
     file = open(file_name, 'r',encoding="utf-8")
     file_lines = file.readlines()

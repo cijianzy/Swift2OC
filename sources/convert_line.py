@@ -13,11 +13,17 @@ def solve_line(line, deep):
     utility.append_to_body(line, deep)
 
 def resolve_expression(line):
+    # solve expression
     m = re.match('"(.+?)"',line)
     if m:
-        print(m.group(0))
-    # if (m = re.match('(.+?)"(.+?)"(.+?)', line).group(1)) != None:
-    #     return
+        return '@"{}"'.format(m.group(1))
+    m = re.search('([a-zA-Z]+)\(\)', line)
+    if m and line.find('.') == -1:
+        return '[[{} alloc] init];'.format(m.group(1))
+    # this if is to ship snpkit equalto, because it's not like normal function
+    if line.find('euqalTo') != -1:
+        return line
+
     return line
 
 def resolve_init(line):
@@ -34,4 +40,4 @@ def resolve_line(line):
         return resolve_equal(line)
     if line.find('return') == 0:
         return 'return ' + resolve_expression(line.split(' ')[1]) + ';';
-    return line
+    return resolve_expression(line) + ';'
