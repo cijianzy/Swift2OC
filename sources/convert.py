@@ -102,6 +102,9 @@ def solve_lines(lines, last_type, deep = 0):
             snp_lines = get_closure_lines(lines, p_line)
             solve_snp_layout(snp_lines, deep)
             p_line = p_line + len(snp_lines)
+        elif line.find(') {') != -1:
+            func_call_with_block_lines = get_closure_lines(lines, p_line)
+            p_line = p_line + len(func_call_with_block_lines)
         else:
             solve_line(line, deep)
             p_line = p_line + 1
