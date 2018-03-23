@@ -9,7 +9,7 @@ import re
 
 def contain_func_call(line):
     fragments = line.split(' ')
-    # SnapKit
+    # SnapKit make function, it use block to replace function, so there should ship this case
     if line.find('make') != -1 and line.find('equalTo') != -1:
         return False
     for f in fragments:
@@ -25,13 +25,20 @@ def solve_line(line, deep):
 
 def resolve_func(line):
     if line.find(')') != -1:
-        r = line.find(')')
+        func_r = line.find(')')
 
-        l = len(line) - line[::-1].find('(')
-        # print(line[::-1])
-        # print(l, r)
-        print(line[l-1:r+1])
+        # print(line[r+1::-1])
+        call_l = func_r - line[func_r+1::-1].find('(')
+        func_l = call_l
+
+        for i in range(call_l-1, -1 ,-1):
+            if line[i] != '(' and line[i] != ' ':
+                func_l = i
+            else:
+                break
     return line
+
+
 
 def resolve_expression(line):
     # solve expression
