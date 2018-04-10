@@ -14,13 +14,20 @@ os.system('rm ../output/output.m')
 os.system('rm ../output/output.h')
 file_name = '/Users/cijian/workspace/EMAS/EMAS/SSH/ALYSSHSettingVC.swift'
 
-
 out_put_h = '../output/output.h'
 out_put_m = '../output/output.m'
 
 lines = convert_test.get_clean_file(file_name)
 
 def get_closure_lines(lines, start_line_number):
+    """
+    splite closure between '{'  '}'
+
+    :param lines: content
+    :param start_line_number: should recognize begein this line
+    :return: Null
+    """
+
     bracket_count = 0;
     for p_line in range(start_line_number, len(lines)):
         line = lines[p_line]
@@ -29,7 +36,13 @@ def get_closure_lines(lines, start_line_number):
         if bracket_count == 0:
             return lines[start_line_number:p_line + 1]
 
+
 def solve_class_lines(lines, deep):
+    """
+    Convert Objective-c class define sentence to Swift class
+    :param lines: class closure
+    :param deep: the deep to print
+    """
     class_name = re.search('class (.+?):', lines[0]).group(1)
     if class_name == None:
         class_name = re.search('class (.+?)', lines[0]).group(1)
@@ -42,14 +55,20 @@ def solve_class_lines(lines, deep):
     utility.append_to_header('', 0)
 
 def solve_func_lines(lines, deep):
+
+    no_point_type = {'Int': 'Int'}
     m = re.search('> *(.+?) *{', lines[0])
 
+    """Get func return type"""
     if m:
         func_return_type = m.group(1)
-        utility.append_to_body('-({} *){} '.format(func_return_type, 'func') + '{', 0)
-    else:
-        utility.append_to_body('-(void){} '.format('func') + '{', 0)
 
+        if func_return_type not in no_point_type.keys():
+            func_return_type += ' *'
+    else:
+        func_return_type = 'void'
+
+    utility.append_to_body('-({}){} '.format(func_return_type,'func') + '{', 0)
     solve_lines(lines[1:-1], 'func', 1)
     utility.append_to_body('}', 0)
     utility.append_to_body('', 0)
@@ -79,6 +98,7 @@ def solve_snp_layout(lines, deep):
     utility.append_to_body('', deep)
 
 def solve_lines(lines, last_type, deep = 0):
+
     p_line = 0
     while p_line < len(lines):
         line = lines[p_line]
