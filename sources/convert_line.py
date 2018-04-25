@@ -40,7 +40,7 @@ def resolve_func_call_with_params(line):
     :param line: function call
     :return: resolved function call
     """
-
+    result_line = line;
     if line.find('#select') == 0:
         result_line = line.replace('#', '@')
     elif line.find('.aly') != -1:
@@ -71,6 +71,7 @@ def resolve_func_call_with_params(line):
         for param in params_array:
             result_line += param
         result_line += ']'
+    print(line)
     return result_line
 
 def resolve_func_call(line):
@@ -113,6 +114,7 @@ def resolve_expression(line):
     if line.find('euqalTo') != -1:
         return line
     while contain_func_call(line):
+        print(line)
         line = resolve_func_call(line)
 
     return line
@@ -131,6 +133,7 @@ def get_random_str(line):
     return map_str
 
 def resolve_line(line):
+    print(line)
     global replace_map
 
     replace_map = {}
@@ -142,7 +145,8 @@ def resolve_line(line):
     elif line.find(' = ') != -1:
         result = resolve_equal(line)
     elif line.find('return') == 0:
-        result = 'return ' + resolve_expression(line.split(' ')[1]);
+        if len(line.split(' ')) > 1:
+            result = 'return ' + resolve_expression(' '.join(line.split(' ')[1:]))
     else:
         result = resolve_expression(line)
 

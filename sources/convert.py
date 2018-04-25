@@ -12,7 +12,8 @@ import sources.utility as utility
 
 os.system('rm ../output/output.m')
 os.system('rm ../output/output.h')
-file_name = '/Users/cijian/workspace/EMAS/EMAS/SSH/ALYSSHSettingVC.swift'
+# file_name = '/Users/cijian/workspace/EMAS/EMAS/SSH/ALYSSHSettingVC.swift'
+file_name = '../input/input.swift'
 
 out_put_h = '../output/output.h'
 out_put_m = '../output/output.m'
@@ -54,6 +55,10 @@ def solve_class_lines(lines, deep):
     utility.append_to_header('@end', 0)
     utility.append_to_header('', 0)
 
+def solve_protocol_lines(lines, deep):
+    pass
+
+
 def solve_func_lines(lines, deep):
 
     no_point_type = {'Int': 'Int'}
@@ -68,7 +73,7 @@ def solve_func_lines(lines, deep):
     else:
         func_return_type = 'void'
 
-    utility.append_to_body('-({}){} '.format(func_return_type,'func') + '{', 0)
+    utility.append_to_body('-({}){} '.format(func_return_type,lines[0]) + '{', 0)
     solve_lines(lines[1:-1], 'func', 1)
     utility.append_to_body('}', 0)
     utility.append_to_body('', 0)
@@ -78,9 +83,12 @@ def solve_lazy_var_lines(lines, deep):
     lazy_var_type = re.search('lazy var .*: *(.+?) =', lines[0]).group(1)
     lazy_var_name = re.search('lazy var (.+?):', lines[0]).group(1)
     utility.append_to_header('@property (nonatomic, strong) ' + lazy_var_type + ' *' + lazy_var_name + ';', 0)
-    utility.append_to_body('@synthesize {} _{};'.format(lazy_var_name, lazy_var_name), 0)
+    utility.append_to_body('@synthesize {} = _{};'.format(lazy_var_name, lazy_var_name), 0)
     utility.append_to_body('-({} *){} '.format(lazy_var_type, lazy_var_name) + '{', 0)
-    solve_lines(lines[1:-1], 'lazy_var', 1)
+    utility.append_to_body('if(!_' + lazy_var_name + ') {', 1)
+    solve_lines(lines[1:-1], 'lazy_var', 2)
+    utility.append_to_body('}', 1)
+    utility.append_to_body('return _{};'.format(lazy_var_name), 1)
     utility.append_to_body('}', 0)
     utility.append_to_body('', 0)
 
@@ -102,6 +110,9 @@ def solve_lines(lines, last_type, deep = 0):
     p_line = 0
     while p_line < len(lines):
         line = lines[p_line]
+        if line.find('protocol'):
+            protocol_lines = get_closure_lines(lines, p_line)
+            p_line = p_line + len(protocol_lines)
         if line.find('class ') != -1:
             class_lines = get_closure_lines(lines, p_line)
             solve_class_lines(class_lines, deep)
@@ -114,7 +125,7 @@ def solve_lines(lines, last_type, deep = 0):
             lazy_var_lines = get_closure_lines(lines, p_line)
             solve_lazy_var_lines(lazy_var_lines, deep)
             p_line = p_line + len(lazy_var_lines)
-        elif line.find('if ') != -1:
+        elif line.find('if ') != -1 or line.find('else if') != -1:
             if_lines = get_closure_lines(lines, p_line)
             solve_if_lines(if_lines, deep)
             p_line = p_line + len(if_lines)
@@ -123,6 +134,12 @@ def solve_lines(lines, last_type, deep = 0):
             solve_snp_layout(snp_lines, deep)
             p_line = p_line + len(snp_lines)
         elif line.find(') {') != -1:
+            func_call_with_block_lines = get_closure_lines(lines, p_line)
+            p_line = p_line + len(func_call_with_block_lines)
+        elif line.find(': {') != -1:
+            func_call_with_block_lines = get_closure_lines(lines, p_line)
+            p_line = p_line + len(func_call_with_block_lines)
+        elif line.find('({') != -1:
             func_call_with_block_lines = get_closure_lines(lines, p_line)
             p_line = p_line + len(func_call_with_block_lines)
         else:
